@@ -4,7 +4,7 @@ ENV SSH_PASSWORD=""
 ENV PHP_XDEBUG_IP=""
 
 # Instala os pacotes necessários para o SSH e Xdebug
-RUN apt-get update && apt-get install -y openssh-server dos2unix wget
+RUN apt-get update && apt-get install -y openssh-server dos2unix wget zip unzip
 
 RUN set -e ; \
     pecl install xdebug-3.1.6; \
