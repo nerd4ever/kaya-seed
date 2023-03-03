@@ -123,10 +123,13 @@ $app->get('/kaya-marketplace/artifact/{id}/log', function (Request $request, $id
 /**
  * Para criar um novo pedido
  */
-$app->post('/kaya-marketplace/artifact/{id}/{orderId}', function (Request $request, $id, $orderId) use ($app, $manager) {
+$app->post('/kaya-marketplace/artifact/{id}/order/{orderId}', function (Request $request, $id, $orderId) use ($app, $manager) {
     $artifact = $manager->get($id);
     if (!$artifact instanceof Artifact) {
         return $app->json($manager->error($request->getClientIp(), 'artifact_not_found'), 404);
+    }
+    if ($manager->stock($id) <= 0) {
+        return $app->json($manager->error($request->getClientIp(), 'artifact_out_of_stock'), 409);
     }
     if ($manager->exists($id, $orderId)) {
         return $app->json($manager->error($request->getClientIp(), 'provisiona_already_exists'), 409);
@@ -146,14 +149,18 @@ $app->post('/kaya-marketplace/artifact/{id}/{orderId}', function (Request $reque
 /**
  * Para atualizar o status de um produto ou pedido
  */
-$app->put('/kaya-marketplace/artifact/{id}/{orderId}/{action}', function (Request $request, $id, $orderId, $action) use ($app, $manager) {
+$app->put('/kaya-marketplace/artifact/{id}/order/{orderId}/{action}', function (Request $request, $id, $orderId, $action) use ($app, $manager) {
     $artifact = $manager->get($id);
     if (!$artifact instanceof Artifact) {
         return $app->json($manager->error($request->getClientIp(), 'artifact_not_found'), 404);
     }
     if (!in_array($action, $manager->actions())) {
         $manager->log_write($id, 'unsupported action to order: ' . $orderId);
-        return $app->json($manager->error($request->getClientIp(), 'artifact_unsupported_action'), 403);
+        return $app->json($manager->error(
+            $request->getClientIp(),
+            'artifact_unsupported_action',
+            'unsupported action ' . $action . ' to order ' . $orderId . ', available actions are: ' . join(', ', $manager->actions())
+        ), 422);
     }
     if (!$manager->exists($id, $orderId)) {
         return $app->json($manager->error($request->getClientIp(), 'artifact_provision_not_found'), 404);

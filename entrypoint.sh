@@ -2,10 +2,8 @@
 set -e
 # Project Dir
 
-if [ -z "${PHP_XDEBUG_IP}" ]; then
-  phpdismod xdebug
-else
-  cat <<EOF >/etc/php/7.4/mods-available/xdebug.ini
+if [ -n "${PHP_XDEBUG_IP}" ]; then
+cat <<EOF > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 zend_extension=xdebug.so
 [xdebug]
 xdebug.mode=debug
@@ -20,16 +18,12 @@ xdebug.log = /tmp/xdebug.log
 xdebug.output_dir = /tmp
 xdebug.idekey=kaya-seed
 EOF
-  phpenmod xdebug
 fi
 projectDir="/etc/nerd4ever/kaya-seed"
 
-cd "${projectDir}" || exit 1
-composer install
-
 if [ -n "${SSH_PASSWORD}" ]; then
-  echo "nerd4ever:${SSH_PASSWORD}" | chpasswd
-  echo "${SSH_PASSWORD}" >/etc/nerd4ever/extras/password.txt
+  echo "root:${SSH_PASSWORD}" | chpasswd
+  echo "${SSH_PASSWORD}" > /etc/nerd4ever/password.txt
   /etc/init.d/ssh start
 fi
 

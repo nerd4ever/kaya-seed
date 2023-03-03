@@ -84,7 +84,7 @@ class ArtifactManager implements ArtifactManagerInterface
     {
         if (!$this->exists($id, $orderId)) return [];
         $filename = $this->provision_filename($id, $orderId);
-        return json_decode(file_get_contents($filename, true));
+        return json_decode(file_get_contents($filename), true);
     }
 
     private function provision_filename($id, $orderId): string
