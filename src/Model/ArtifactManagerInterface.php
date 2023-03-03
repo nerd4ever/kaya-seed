@@ -14,11 +14,17 @@ interface ArtifactManagerInterface
 
     public function stock($id): int;
 
-    public function provision($id, $orderId): ?string;
+    public function provision($id, $orderId): array;
 
     public function exists($id, $orderId): bool;
 
-    public function metadata($id, $orderId): ?array;
+    public function metadata($id, $orderId): array;
 
-    public function change($id, $orderId, $state): array;
+    public function execute($id, $orderId, $action): array;
+
+    public function error($address, $error, $errorDescription): array;
+
+    public function actions(): array;
+
+    public function states(): array;
 }

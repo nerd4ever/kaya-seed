@@ -9,17 +9,21 @@ use JsonSerializable;
  */
 class Artifact implements JsonSerializable
 {
+    const ActionCreate = 'create';
+    const ActionStop = 'stop';
+    const ActionStart = 'start';
+    const ActionTerminate = 'terminate';
+
     const StateCreating = 'creating'; // Estado de criação de um recurso
     const StateCreated = 'created'; // Estado de um recurso que já foi criado
-    const StatePausing = 'pausing'; // Estado de um recurso que está sendo pausado
-    const StatePaused = 'paused'; // Estado de um recurso que foi pausado
+    const StateStopping = 'stopping'; // Estado de um recurso que está sendo parado
+    const StateStopped = 'stopped'; // Estado de um recurso que foi parado
     const StateStarting = 'starting'; // Estado de um recurso que está sendo iniciado
     const StateRunning = 'running'; // Estado de um recurso que está em execução
-    const StateStopping = 'stopping'; // Estado de um recurso que está sendo parado
     const StateTerminating = 'terminating'; // Estado de um recurso que está sendo encerrado
     const StateTerminated = 'terminated'; // Estado de um recurso que já foi encerrado
 
-    private string $id; // Identificador único do produto ou serviço a ser comercializado (geralmente <vendor>_uuid)
+    private string $id; // Identificador único do produto ou serviço a ser comercializado (geralmente uuid)
     private string $displayName; // Nome de exibição do produto
     private string $shortname;  // Nome único usado para identificar o produto
     private bool $enabled; // Indica se o serviço está ativado ou desativado

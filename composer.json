@@ -4,7 +4,8 @@
     "type": "library",
     "require": {
         "phpunit/phpunit": "^9.0.0",
-        "nerd4ever/common": "^2.3"
+        "nerd4ever/common": "^2.3",
+        "ext-json": "*"
     },
     "require-dev": {
         "silex/silex": "^2.3"
