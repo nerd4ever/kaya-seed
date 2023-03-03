@@ -3,9 +3,11 @@
     "description": "Minimal Kaya Marketplace Endpoint",
     "type": "library",
     "require": {
+        "ext-json": "*",
+        "ext-openssl": "*",
         "phpunit/phpunit": "^9.0.0",
         "nerd4ever/common": "^2.3",
-        "ext-json": "*"
+        "firebase/php-jwt": "^6.4"
     },
     "require-dev": {
         "silex/silex": "^2.3"
