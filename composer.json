@@ -1,0 +1,24 @@
+{
+    "name": "nerd4ever/kaya-seed",
+    "description": "Minimal Kaya Marketplace Endpoint",
+    "type": "library",
+    "require": {
+        "phpunit/phpunit": "^9.0.0",
+        "nerd4ever/common": "^2.3"
+    },
+    "require-dev": {
+        "silex/silex": "^2.3"
+    },
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Nerd4ever\\Kaya\\Seed\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Sileno Brito",
+            "email": "silenobrito@gmail.com"
+        }
+    ]
+}
