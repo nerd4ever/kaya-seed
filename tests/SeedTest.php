@@ -419,6 +419,16 @@ class SeedTest extends TestCase
         }
     }
 
+    /**
+     * @depends testDiscoveryEndpoint
+     * @depends testArtifactEndpoint
+     * @depends testArtifactOrderEndpoint
+     * @depends testArtifactStockEndpoint
+     * @depends testArtifactLogEndpoint
+     * @depends testArtifactOrderPostEndpoint
+     * @depends testArtifactOrderPutEndpoint
+     * @return void
+     */
     public function testToken(): void
     {
         $cred = $this->tokenManager->refresh();
@@ -427,6 +437,7 @@ class SeedTest extends TestCase
 
         $cred = $this->tokenManager->refresh($cred->refresh_token);
         $this->assertTrue($cred != null);
+
         $this->assertTrue($this->match_token($cred));
     }
 }

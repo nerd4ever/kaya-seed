@@ -19,7 +19,6 @@ function to_uuidv4($value): string
         substr($data, 20, 12);
 }
 
-
 $app = new Application();
 $tokenManager = new TokenManager();
 $publisherManager = new PublishManager($tokenManager);
