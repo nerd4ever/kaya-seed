@@ -68,23 +68,33 @@ final class TokenManager implements TokenManagerInterface
 
     public function authorize(string $clientId, string $username, string $password): ?stdClass
     {
-        $client = new Client();
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded'
-        ];
-        $options = [
-            'form_params' => [
-                'grant_type' => 'password',
-                'username' => $username,
-                'password' => $password,
-                'client_id' => $clientId
-            ]];
-        return $this->token_authorize($headers, $client, $options);
+        try {
+            $client = new Client([
+                'verify' => !$this->sandbox()
+            ]);
+            $headers = [
+                'Content-Type' => 'application/x-www-form-urlencoded'
+            ];
+            $options = [
+                'form_params' => [
+                    'grant_type' => 'password',
+                    'username' => $username,
+                    'password' => $password,
+                    'client_id' => $clientId
+                ]];
+            return $this->token_authorize($headers, $client, $options);
+        } catch (Exception $ex) {
+            error_log($ex->getMessage());
+            return null;
+        }
     }
 
-    public function refresh(string $refreshToken): ?stdClass
+    public function refresh(?string $refreshToken = null): ?stdClass
     {
-        $client = new Client();
+        if (empty($refreshToken)) $refreshToken = $this->refreshToken;
+        $client = new Client([
+            'verify' => !$this->sandbox()
+        ]);
         $headers = [
             'Content-Type' => 'application/x-www-form-urlencoded'
         ];
@@ -96,11 +106,11 @@ final class TokenManager implements TokenManagerInterface
         return $this->token_authorize($headers, $client, $options);
     }
 
-    public function token_authorize(array $headers, Client $client, array $options): mixed
+    public function token_authorize(array $headers, Client $client, array $options): ?stdClass
     {
-        $request = new Request('POST', $this->getBaseUri() . '/platform/v1/oauth2/token', $headers);
+        $request = new Request('POST', $this->base_uri() . '/platform/v1/oauth2/token', $headers);
         $res = $client->sendAsync($request, $options)->wait();
-        $data = json_decode($res->getBody(), false);
+        $data = (object)array_filter(json_decode($res->getBody(), true));
         if (json_last_error() !== JSON_ERROR_NONE) return null;
         if (!$this->credential_save($data)) return null;
         return $data;
@@ -109,7 +119,7 @@ final class TokenManager implements TokenManagerInterface
     /**
      * @return string|null
      */
-    public function getAccessToken(): ?string
+    public function access_token(): ?string
     {
         if ($this->expirationTime < time()) {
             if (empty($this->refreshToken)) return null;
@@ -123,16 +133,18 @@ final class TokenManager implements TokenManagerInterface
 
     public function revoke(): bool
     {
-        $token = $this->getAccessToken();
+        $token = $this->access_token();
         if (!empty($token)) return false;
 
-        $client = new Client();
+        $client = new Client([
+            'verify' => !$this->sandbox()
+        ]);
         $headers = [
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . $token
         ];
         $body = '';
-        $request = new Request('DELETE', $this->getBaseUri() . '/platform/v1/oauth2', $headers, $body);
+        $request = new Request('DELETE', $this->base_uri() . '/platform/v1/oauth2', $headers, $body);
         $res = $client->sendAsync($request)->wait();
         return $res->getStatusCode() === 204;
     }
@@ -166,7 +178,10 @@ final class TokenManager implements TokenManagerInterface
     private function get_key(string $keyId, string $issuer): ?string
     {
         try {
-            $client = new Client();
+            $client = new Client([
+                    'verify' => !$this->sandbox()
+                ]
+            );
             $response = $client->get($issuer . '/.well-known/openid-configuration');
             $oidcDiscovery = json_decode((string)$response->getBody(), true);
 
@@ -209,14 +224,14 @@ final class TokenManager implements TokenManagerInterface
     /**
      * @return bool
      */
-    public function isSandbox(): bool
+    public function sandbox(): bool
     {
         return $this->sandbox;
     }
 
-    private function getBaseUri(): string
+    private function base_uri(): string
     {
-        return 'https://kaya-platform' . ($this->isSandbox() ? '.sandbox' : '') . '.nerd4ever.com.br';
+        return 'https://kaya-platform' . ($this->sandbox() ? '.sandbox' : '') . '.nerd4ever.com.br';
     }
 
 }

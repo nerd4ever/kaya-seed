@@ -3,6 +3,8 @@
 namespace Nerd4ever\Kaya\Seed\Model;
 
 use Nerd4ever\Common\Tools\IdTools;
+use stdClass;
+use Exception;
 
 /**
  * My ArtifactManager
@@ -10,18 +12,20 @@ use Nerd4ever\Common\Tools\IdTools;
  * @package Nerd4ever\Kaya\Seed\Entity
  * @author Sileno de Oliveira Brito
  */
-class ArtifactManager implements ArtifactManagerInterface
+class WebhookManager implements WebhookManagerInterface
 {
     private int $defaultStock;
-
+    private PublisherManagerInterface $publisherManager;
     private array $artifacts = [];
 
     /**
+     * @param PublisherManagerInterface $publisherManager
      * @param int $defaultStock
      */
-    public function __construct(int $defaultStock)
+    public function __construct(PublisherManagerInterface $publisherManager, int $defaultStock)
     {
         $this->defaultStock = $defaultStock;
+        $this->publisherManager = $publisherManager;
     }
 
     public function add(Artifact $artifact): bool
@@ -59,14 +63,14 @@ class ArtifactManager implements ArtifactManagerInterface
         return $data;
     }
 
-    public function provision($id, $orderId): array
+    public function provision($id, $orderId): ?stdClass
     {
         $artifact = $this->get($id);
-        if (!$artifact instanceof Artifact) return [];
-        if ($this->stock($id) <= 0) return [];
+        if (!$artifact instanceof Artifact) return null;
+        if ($this->stock($id) <= 0) return null;
         $filename = $this->provision_filename($id, $orderId);
-        if (file_exists($filename)) return [];
-        $data = [
+        if (file_exists($filename)) return null;
+        $data = (object)[
             'id' => IdTools::gen(),
             'publicId' => IdTools::gen(),
             'privateId' => IdTools::gen(),
@@ -76,8 +80,24 @@ class ArtifactManager implements ArtifactManagerInterface
             'state' => Artifact::StateCreating,
             'action' => Artifact::ActionCreate,
         ];
-        file_put_contents($filename, json_encode($data));
-        return $data;
+        try {
+            $handle = fopen($filename, 'w');
+            if (!$handle) throw new Exception('failure on open provision file: ' . $filename);
+            fwrite($handle, json_encode($data));
+            if (error_get_last()) {
+                fclose($handle);
+                throw new Exception('failure on write in provision file: ' . $filename);
+            }
+            fflush($handle);
+            if (error_get_last()) {
+                fclose($handle);
+                throw new Exception('failure on clear buffer in provision file: ' . $filename);
+            }
+            fclose($handle);
+            return $data;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     public function metadata($id, $orderId): array
@@ -89,7 +109,7 @@ class ArtifactManager implements ArtifactManagerInterface
 
     private function provision_filename($id, $orderId): string
     {
-        return $id . '.' . $orderId . '.metadata';
+        return $this->cache_dir() . '/' . $id . '.' . $orderId . '.metadata';
     }
 
     public function exists($id, $orderId): bool
@@ -100,33 +120,10 @@ class ArtifactManager implements ArtifactManagerInterface
         return file_exists($filename);
     }
 
-    public function actions(): array
-    {
-        return [
-            Artifact::ActionCreate,
-            Artifact::ActionStart,
-            Artifact::ActionStop,
-            Artifact::ActionTerminate,
-        ];
-    }
-
-    public function states(): array
-    {
-        return [
-            Artifact::StateCreating,
-            Artifact::StateCreated,
-            Artifact::StateStopped,
-            Artifact::StateStarting,
-            Artifact::StateRunning,
-            Artifact::StateStopping,
-            Artifact::StateTerminating,
-            Artifact::StateTerminated,
-        ];
-    }
 
     public function execute($id, $orderId, $action): array
     {
-        if (!in_array($action, $this->actions())) {
+        if (!in_array($action, $this->publisherManager->actions())) {
             return [];
         }
         $filename = $this->provision_filename($id, $orderId);
@@ -153,9 +150,14 @@ class ArtifactManager implements ArtifactManagerInterface
         return $data;
     }
 
+    private function cache_dir(): string
+    {
+        return __DIR__ . '/../../sample/.data';
+    }
+
     private function log_filename($id): string
     {
-        return $id . '.log';
+        return $this->cache_dir() . '/' . $id . '.log';
     }
 
     public function log_write(string $id, string $message)
@@ -172,22 +174,32 @@ class ArtifactManager implements ArtifactManagerInterface
     public function stock($id): int
     {
         $using = 0;
-        $dir = dir('.');
+        $dir = dir($this->cache_dir());
         while ($f = $dir->read()) {
             if (in_array($f, ['.', '..'])) continue;
-            if (substr($f, 0, strlen($id)) != $id || pathinfo($f, PATHINFO_EXTENSION) != 'metadata') continue;
+            if (!str_starts_with($f, $id) || pathinfo($this->cache_dir(). '/'. $f, PATHINFO_EXTENSION) != 'metadata') continue;
             $using++;
         }
         return $this->defaultStock - $using;
     }
 
-    public function error($address, $error, $errorDescription = null): array
+    public function clear()
     {
-        return [
+        $files = array_diff(scandir($this->cache_dir()), array('.', '..'));
+        foreach ($files as $f) {
+            $filename = $this->cache_dir() . '/' . $f;
+            if (!is_file($filename)) continue;
+            unlink($filename);
+        }
+    }
+
+    public function error($address, $error, $errorDescription = null): stdClass
+    {
+        return (object)array_filter([
             'error' => $error,
             'errorDescription' => $errorDescription,
             'address' => $address,
             'date' => date('c')
-        ];
+        ]);
     }
 }

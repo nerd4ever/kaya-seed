@@ -2,7 +2,9 @@
 
 namespace Nerd4ever\Kaya\Seed\Model;
 
-interface ArtifactManagerInterface
+use stdClass;
+
+interface WebhookManagerInterface
 {
     public function add(Artifact $artifact): bool;
 
@@ -14,7 +16,7 @@ interface ArtifactManagerInterface
 
     public function stock($id): int;
 
-    public function provision($id, $orderId): array;
+    public function provision($id, $orderId): ?stdClass;
 
     public function exists($id, $orderId): bool;
 
@@ -22,9 +24,6 @@ interface ArtifactManagerInterface
 
     public function execute($id, $orderId, $action): array;
 
-    public function error($address, $error, $errorDescription): array;
+    public function error($address, $error, $errorDescription): stdClass;
 
-    public function actions(): array;
-
-    public function states(): array;
 }
