@@ -1,4 +1,7 @@
 [![CI](https://github.com/nerd4ever/kaya-seed/actions/workflows/main.yml/badge.svg)](https://github.com/nerd4ever/kaya-seed/actions/workflows/main.yml)
+[![codecov](https://codecov.io/github/nerd4ever/kaya-seed/branch/master/graph/badge.svg?token=AQYXHMKG97)](https://codecov.io/github/nerd4ever/kaya-seed)
+[![PHP 8.1](https://img.shields.io/badge/php-8.1-red)](https://github.com/nerd4ever/kaya-seed/)
+[![license](https://img.shields.io/badge/license-proprietary-green)](https://github.com/nerd4ever/kaya-seed/)
 
 FORMAT: 1A
 
