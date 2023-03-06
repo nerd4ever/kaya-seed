@@ -152,7 +152,11 @@ class WebhookManager implements WebhookManagerInterface
 
     private function cache_dir(): string
     {
-        return __DIR__ . '/../../sample/.data';
+        $dir = __DIR__ . '/../../sample/.data';
+        if (!is_dir($dir) && !file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        return $dir;
     }
 
     private function log_filename($id): string
