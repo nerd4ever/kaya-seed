@@ -109,7 +109,11 @@ class WebhookManager implements WebhookManagerInterface
 
     private function provision_filename($id, $orderId): string
     {
-        return $this->cache_dir() . '/' . $id . '.' . $orderId . '.metadata';
+        $dir = $this->cache_dir() . '/' . $id . '.' . $orderId . '.metadata';
+        if (!is_dir($dir) && !file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        return $dir;
     }
 
     public function exists($id, $orderId): bool
@@ -177,7 +181,7 @@ class WebhookManager implements WebhookManagerInterface
         $dir = dir($this->cache_dir());
         while ($f = $dir->read()) {
             if (in_array($f, ['.', '..'])) continue;
-            if (!str_starts_with($f, $id) || pathinfo($this->cache_dir(). '/'. $f, PATHINFO_EXTENSION) != 'metadata') continue;
+            if (!str_starts_with($f, $id) || pathinfo($this->cache_dir() . '/' . $f, PATHINFO_EXTENSION) != 'metadata') continue;
             $using++;
         }
         return $this->defaultStock - $using;
