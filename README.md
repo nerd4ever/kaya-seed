@@ -1,3 +1,5 @@
+[![CI](https://github.com/nerd4ever/kaya-seed/actions/workflows/main.yml/badge.svg)](https://github.com/nerd4ever/kaya-seed/actions/workflows/main.yml)
+
 FORMAT: 1A
 
 # Kaya-Seed

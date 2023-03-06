@@ -30,3 +30,7 @@ jobs:
           token: ${{ secrets.CODE_COV_TOKEN }}
           files: ./coverage.xml
           verbose: true
+      - name: Upload artifact coverage
+        uses: actions/upload-artifact@v2
+        with:
+        path: ./coverage.xml
