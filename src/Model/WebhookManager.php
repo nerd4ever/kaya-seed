@@ -109,11 +109,7 @@ class WebhookManager implements WebhookManagerInterface
 
     private function provision_filename($id, $orderId): string
     {
-        $dir = $this->cache_dir() . '/' . $id . '.' . $orderId . '.metadata';
-        if (!is_dir($dir) && !file_exists($dir)) {
-            mkdir($dir, 0777, true);
-        }
-        return $dir;
+        return $this->cache_dir() . '/' . $id . '.' . $orderId . '.metadata';
     }
 
     public function exists($id, $orderId): bool
