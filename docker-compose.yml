@@ -1,0 +1,14 @@
+version: "2.0"
+services:
+  kaya-seed:
+    restart: always
+    image: nerd4ever/kaya-seed:latest
+    build:
+      context: .
+    container_name: kaya-seed
+    environment:
+      PHP_XDEBUG_IP: "10.224.50.79"
+      SSH_PASSWORD: "#changeIt!"
+    ports:
+      - "30155:80"
+      - "30156:22"
